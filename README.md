@@ -114,7 +114,7 @@ Run in a fresh `python:3.12-slim` container on VM2 with the network removed at i
 | Offline install from wheels only (`avm-ac2` → `avm-mesh` → `avm-proofpack` → `avm-effectproof`) | PASS |
 | Installed version matches `pyproject.toml` (`0.1.0`) | PASS |
 | Both packages import from `site-packages`, not `/work/src` | PASS |
-| Suite | **16 tests, 0 skipped, 0 failed** |
+| Suite | **20 tests, 0 skipped, 0 failed** |
 | Shipped example drives both chains on the installed wheel | **PASS** |
 | `avm-ac2` entry point runs; `payload` emits canonical bytes | PASS |
 | **CLEAN-ROOM GREEN** | 9 PASS, 0 FAIL across 5 stages |
@@ -129,11 +129,11 @@ FAILED test_a_consent_from_a_foreign_key_is_refused_on_both_chains[voi]
 2 failed, 14 passed
 ```
 
-Restoring the file returned it to `16 passed`. The guard is load-bearing, not merely present.
+Restoring the file returned it to `20 passed`. The guard is load-bearing, not merely present.
 
 #### Local, on both chains
 
-`tests/test_consent.py` — **16 passed** on Python 3.12, driving the shipped
+`tests/test_consent.py` — **20 passed** on Python 3.12, driving the shipped
 `avm_mesh.sealed.seal` and the real captures:
 
 | Chain | Capture | Genesis pin | Tier reached | Sender read from STIB |
@@ -150,7 +150,7 @@ chain refused rather than guessed, and a digest that changes when any settlement
 #### Also validated as part of `avm-mesh`
 
 The same module ships as `avm_mesh.ac2` inside `avm-mesh`, whose full VM2 gate is green including an AC2
-stage: **564 tests, 0 skipped, 0 failed**, with the consent binding passing on both chains against the
+stage: **567 tests, 0 skipped, 0 failed**, with the consent binding passing on both chains against the
 installed wheel.
 
 ### What is *not* demonstrated
