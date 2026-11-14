@@ -30,6 +30,17 @@ from .consent import (
     verify_consent,
 )
 
+# Transaction-bound consent: the fallback that needs no arbitrary-payload
+# approval from the wallet. Same guarantees where it applies, different preimage.
+from .txn_consent import (
+    TXN_CONSENT_KEY,
+    TXN_CONSENT_VERSION,
+    build_txn_consent,
+    preimage_digest,
+    signing_preimage,
+    verify_txn_consent,
+)
+
 __all__ = [
     "AC2_CONSENT_KEY",
     "AC2_CONSENT_VERSION",
@@ -46,5 +57,11 @@ __all__ = [
     "consent_payload",
     "sender_from_bundle",
     "verify_consent",
+    "TXN_CONSENT_KEY",
+    "TXN_CONSENT_VERSION",
+    "build_txn_consent",
+    "preimage_digest",
+    "signing_preimage",
+    "verify_txn_consent",
 ]
 __version__ = "0.1.0"

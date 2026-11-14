@@ -22,6 +22,7 @@ from avm_mesh import MeshError
 from avm_mesh.receipt import create_receipt, verify_receipt
 
 from .consent import consent_level, consent_payload
+from .txn_consent import TXN_CONSENT_KEY, verify_txn_consent
 
 LEVEL_ORDER = ["none", "consent_present", "sender_bound", "consensus_bound"]
 
@@ -104,13 +105,31 @@ def _cmd_verify(args: argparse.Namespace) -> int:
             expected_genesis_hash_b64=args.genesis,
         )
 
-    out = consent_level(envelope, report, bundle=bundle, require=args.require)
+    # Two consent flavours exist and they verify against different preimages. The
+    # CLI must dispatch on which block is present rather than assuming the
+    # canonical one: reporting 'none' for a valid transaction-bound consent
+    # would be a false negative on a correctly signed receipt.
+    import base64 as _b64
+    import json as _json
+    _content = _json.loads(_b64.b64decode(envelope["canonical_bytes_b64"]))
+    if TXN_CONSENT_KEY in _content:
+        if bundle is None or report is None:
+            raise MeshError(
+                "a transaction-bound consent needs --evidence and a resolvable "
+                "proofpack to rebuild the signed preimage"
+            )
+        out = verify_txn_consent(envelope, bundle, report.genesis_id,
+                                 require=args.require)
+        out["flavour"] = "transaction_bound"
+    else:
+        out = consent_level(envelope, report, bundle=bundle, require=args.require)
+        out["flavour"] = "canonical_payload"
 
     if args.json:
         print(json.dumps({**out, "settlement_tier": getattr(report, "trust_root", None)},
                          indent=2, sort_keys=True))
     else:
-        print(f"consent level: {out['level']}")
+        print(f"consent level: {out['level']}  ({out.get('flavour', '-')})")
         if report is not None:
             print(f"settlement:    {report.genesis_id} {report.txid[:16]}... "
                   f"round {report.round} ({report.trust_root})")

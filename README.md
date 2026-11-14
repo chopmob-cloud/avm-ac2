@@ -54,9 +54,14 @@ the agent's word about who paid whom.
 
 ## Install
 
+Not yet on PyPI. Install from the repository:
+
 ```bash
-pip install avm-ac2
+pip install "git+https://github.com/chopmob-cloud/avm-ac2@main"
 ```
+
+Once published, `pip install avm-ac2` will work; until then that command fails, and
+this file will not claim otherwise.
 
 `avm-mesh` supplies the sealed-receipt format and its canonicaliser, so this
 package extends it rather than duplicating either. `cryptography` is a direct
@@ -202,6 +207,42 @@ unverified.** An integration against a live wallet may find that the app shows t
 payload as opaque, or declines it — in which case the fallback is to carry the
 consent over the transaction signature the wallet already produces
 (`sig_hint: transaction-algorand`), which needs no new wallet behaviour.
+
+## Two consent flavours
+
+The package ships two ways to bind a consent, because they depend on different
+things and one of them has no dependency on wallet policy.
+
+### 1. Canonical-payload consent (`avm_ac2.consent`)
+
+The controller signs the settlement as a canonical JSON envelope. Rich — the
+consent covers the amount, asset and chain exactly as the receipt describes them —
+but it asks the wallet to approve a payload that is not a transaction.
+
+### 2. Transaction-bound consent (`avm_ac2.txn_consent`)
+
+The consent is carried over the **transaction signature the wallet already
+produces** when it approves a payment (`sig_hint: transaction-algorand`), so
+nothing new is asked of the wallet. This is the fallback for the case where a
+wallet declines to approve an opaque payload.
+
+The preimage is `"TX" + canonically-encoded(restored Transaction)`, where the
+genesis fields consensus strips on encode are restored on decode. That derivation
+is **verified, not assumed**: `preimage_digest()` must reproduce the bundle's own
+`transaction.txid`, and the tests assert it on both chains. An earlier version
+re-encoded the STIB's `txn` map directly, omitting `gen`/`gh`, and produced a
+confident 52-character base32 string that was simply the wrong transaction — the
+txid equality is what caught it.
+
+| | canonical-payload | transaction-bound |
+|---|---|---|
+| Wallet must approve an opaque payload | **yes** | no |
+| Binds consent to amount/asset as described | yes | no — binds to the transaction |
+| Reaches `sender_bound` | by key comparison | **by construction** |
+| Needs `txn_consent.signing_preimage` | — | yes, verified against `txid` |
+
+Neither proves a hardware passkey was used: that limit is shared and comes from the
+AC2 wire format, not from the choice of flavour.
 
 ### What is *not* demonstrated
 
