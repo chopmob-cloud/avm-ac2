@@ -31,6 +31,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install . pytest
 
+      # The interop test regenerates its fixture with the real AC2 conventions
+      # (base64url + JCS) when node is present. Skipping it would hide the exact
+      # seam it guards, so node is installed explicitly and the test must not skip.
+      - name: Install node for the interop fixture
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
       - name: Dependency closure is consistent
         run: pip check
 
