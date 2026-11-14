@@ -1,5 +1,14 @@
+# Shell scripts and sources must be LF on any clone: a CRLF shebang dies with
+# "set: Illegal option -" before the first line runs on a POSIX host.
 *.sh text eol=lf
 *.py text eol=lf
-*.json text eol=lf
 *.md text eol=lf
 *.toml text eol=lf
+.gitattributes text eol=lf
+
+# Captures are pinned by SHA-256 in tests/test_consent.py, so any checkout-time
+# rewriting breaks the assertion on the right platform only. Marked binary so git
+# never normalises them -- the plain-JSON capture included, because its digest is
+# over the exact bytes a state-proof bundle was captured as.
+tests/captures/* -text
+*.gz -text

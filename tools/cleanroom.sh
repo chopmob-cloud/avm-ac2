@@ -21,9 +21,11 @@ SRC="$WORK/src/avm-ac2"
 AC2_SRC="$WORK/src/avm-ac2"
 VENV="$WORK/venv"
 
-# The avm-mesh captures this suite binds against. They live in avm-mesh's own
-# checkout; a missing capture means the suite SKIPS and the run certifies nothing.
-EXAMPLES="$WORK/examples"
+# The captures ship inside this repository (tests/captures), so a missing one is a
+# packaging defect rather than an unstaged input. EXAMPLES points at them, and
+# REQUIRED_EXAMPLES below asserts the files, not the directory.
+EXAMPLES="$AC2_SRC/tests/captures"
+REQUIRED_EXAMPLES="$EXAMPLES"
 
 FAILED=0
 verdict() {  # verdict <rc> <stage>
@@ -41,7 +43,7 @@ for wheel in "$ART"/avm_ac2-*.whl "$ART"/avm_mesh-*.whl "$ART"/avm_proofpack-*.w
     [ -f "$wheel" ] || { echo "MISSING $wheel"; FAILED=1; }
 done
 for cap in proofpack-66457600.json voi-proofpack-24213754.json.gz; do
-    [ -f "$EXAMPLES/$cap" ] || { echo "MISSING capture $EXAMPLES/$cap"; FAILED=1; }
+    [ -f "$EXAMPLES/$cap" ] || { echo "MISSING capture $EXAMPLES/$cap (ships in the repo)"; FAILED=1; }
 done
 [ -f "$SRC/pyproject.toml" ] || { echo "MISSING $SRC/pyproject.toml"; FAILED=1; }
 [ -f "$SRC/README.md" ] || { echo "MISSING $SRC/README.md"; FAILED=1; }

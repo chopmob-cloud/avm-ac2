@@ -103,9 +103,9 @@ avm-ac2 level   receipt.json --min-level sender_bound    # exits 2 if below
 
 ### Validation
 
-#### clean room (this package, standalone)
+#### Clean-room validation (this package, standalone)
 
-Run in a fresh `python:3.12-slim` container on VM2 with the network removed at install time, against the
+Run in a fresh `python:3.12-slim` container with the network removed at install time, against the
 **installed wheels** rather than the source tree:
 
 | Stage | Result |
@@ -141,17 +141,21 @@ Restoring the file returned it to `20 passed`. The guard is load-bearing, not me
 | Algorand mainnet | `avm-mesh/examples/proofpack-66457600.json` | `wGHE2Pwdv…` | `stake_attested` | `Q34SYPNGP7CW77LIAYNNUZV7Q6GRSUJVKMIAPOJFG3TZULNJGPRA` |
 | Voi mainnet | `avm-mesh/examples/voi-proofpack-24213754.json.gz` | `r20fSQI8g…` | `stake_attested` | `3S6DAF3YX3RDIS4FV2QIPIKGHAPZ52OPOTR6NR25O7RYHTYMBSDQ` |
 
-Both captures are pinned by SHA-256 (the Voi digest is the same one `avm-mesh`'s own `test_voi_chain.py`
-pins, so the two suites agree on the artefact). Per chain the tests cover: the sender read from
+Both captures ship in [`tests/captures/`](tests/captures) and are pinned by SHA-256, so this suite runs
+from a fresh clone with no sibling checkout. The Voi digest is the same one `avm-mesh`'s own
+`test_voi_chain.py` pins, so the two suites agree on the artefact. They are marked `-text` in
+`.gitattributes`, because a checkout that normalises the bytes breaks a hash assertion on one platform
+only. Per chain the tests cover: the sender read from
 authenticated bytes, a successful binding, refusal of a foreign key, refusal of a replayed consent,
 refusal of an edited consent, absence reported as `none`, an unknown version refused by name, an unknown
 chain refused rather than guessed, and a digest that changes when any settlement field changes.
 
 #### Also validated as part of `avm-mesh`
 
-The same module ships as `avm_mesh.ac2` inside `avm-mesh`, whose full VM2 gate is green including an AC2
-stage: **567 tests, 0 skipped, 0 failed**, with the consent binding passing on both chains against the
-installed wheel.
+The same module also ships as `avm_mesh.ac2` inside
+[`avm-mesh`](https://github.com/chopmob-cloud/avm-mesh), whose own clean-room gate is green including an
+AC2 stage: **567 tests, 0 skipped, 0 failed**, with the consent binding passing on both chains against the
+installed wheel. This package is the same code with a narrower dependency and a CLI.
 
 ### What is *not* demonstrated
 

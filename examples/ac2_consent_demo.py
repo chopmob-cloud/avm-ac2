@@ -40,10 +40,12 @@ from avm_mesh import MeshError, sealed  # noqa: E402
 from avm_mesh.receipt import create_receipt, verify_receipt  # noqa: E402
 from avm_proofpack.verify import TrustedVoters  # noqa: E402
 
-#: The captures live in the avm-mesh checkout beside this one, or wherever
-#: AVM_MESH_EXAMPLES points. Located rather than assumed, so a missing fixture
-#: fails loudly instead of quietly skipping both chains.
+#: The captures ship in tests/captures so this demo runs from a fresh clone with
+#: no sibling checkout. The sibling paths remain for development against a live
+#: capture, and AVM_MESH_EXAMPLES overrides everything.
+_OWN = ROOT / "tests" / "captures"
 CANDIDATES = [
+    _OWN,
     ROOT.parent / "avm-mesh" / "examples",
     ROOT.parent / "worktrees" / "avm-mesh-main" / "examples",
 ]
@@ -61,8 +63,9 @@ def examples_dir() -> pathlib.Path:
     for c in ([env] if env else []) + CANDIDATES:
         if c and (c / "proofpack-66457600.json").exists():
             return c
-    raise SystemExit("cannot find the avm-mesh example captures; pass the directory "
-                     "as argv[1] or set AVM_MESH_EXAMPLES")
+    raise SystemExit("cannot find the settlement captures; expected them in "
+                     f"{_OWN} (ship with the package) or pass the directory as "
+                     "argv[1] / set AVM_MESH_EXAMPLES")
 
 
 def load(path: pathlib.Path) -> dict:

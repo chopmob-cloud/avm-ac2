@@ -44,9 +44,14 @@ from avm_proofpack.verify import TrustedVoters
 import avm_mesh  # noqa: E402
 
 _PKG_DIR = pathlib.Path(avm_mesh.__file__).resolve().parent
+_OWN = pathlib.Path(__file__).resolve().parent / "captures"
 _ENV = os.environ.get("AVM_MESH_EXAMPLES")
+# Order matters: the package's OWN captures first, so these tests are
+# self-sufficient and run identically for a stranger who never cloned avm-mesh.
+# The env var and sibling paths remain for development against a live capture.
 CANDIDATES = ([pathlib.Path(_ENV)] if _ENV else []) + [
-    _PKG_DIR.parents[1] / "examples",           # editable install: repo/examples
+    _OWN,                                        # tests/captures in this repo
+    _PKG_DIR.parents[1] / "examples",            # editable install: repo/examples
     pathlib.Path(__file__).resolve().parents[3] / "avm-mesh" / "examples",
 ]
 
