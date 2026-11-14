@@ -37,7 +37,7 @@ from avm_ac2 import (  # noqa: E402
     sender_from_bundle, verify_consent,
 )
 from avm_mesh import MeshError, sealed  # noqa: E402
-from avm_mesh.receipt import _verify_bundle_dict  # noqa: E402
+from avm_mesh.receipt import create_receipt, verify_receipt  # noqa: E402
 from avm_proofpack.verify import TrustedVoters  # noqa: E402
 
 #: The captures live in the avm-mesh checkout beside this one, or wherever
@@ -151,8 +151,17 @@ def main() -> int:
     results = []
     for label, name, genesis_b64 in CHAINS:
         bundle = load(where / name)
-        report = _verify_bundle_dict(bundle, anchor_for(bundle),
-                                     base64.b64decode(genesis_b64))
+        # Walk the PUBLIC path a caller actually uses: build a receipt from the
+        # capture, then verify it. An example that reaches for a private helper
+        # teaches an API nobody should depend on.
+        receipt = create_receipt(bundle, "mem://bundle",
+                                 trusted_voters=anchor_for(bundle))
+        report = verify_receipt(
+            receipt,
+            lambda _uri: bundle,
+            trusted_voters=anchor_for(bundle),
+            expected_genesis_hash_b64=genesis_b64,
+        )
         results.append(run_chain(label, where / name, genesis_b64, bundle, report))
 
     print(f"\n{'=' * 72}")

@@ -19,7 +19,7 @@ import pathlib
 import sys
 
 from avm_mesh import MeshError
-from avm_mesh.receipt import _verify_bundle_dict
+from avm_mesh.receipt import create_receipt, verify_receipt
 
 from .consent import consent_level, consent_payload
 
@@ -27,7 +27,20 @@ LEVEL_ORDER = ["none", "consent_present", "sender_bound", "consensus_bound"]
 
 
 def _read_json(path: str) -> dict:
-    data = json.loads(pathlib.Path(path).read_text(encoding="utf-8"))
+    """Read a JSON document, transparently handling gzip.
+
+    Proofpacks are routinely stored gzipped (``*.json.gz``), and a plain
+    ``read_text`` on one dies with a UnicodeDecodeError on the gzip magic byte
+    ``0x8b`` — which reads like a corrupt fixture rather than an unhandled
+    format. Sniff the magic number instead of trusting the extension, because a
+    capture can be named either way.
+    """
+    raw = pathlib.Path(path).read_bytes()
+    if raw[:2] == b"\x1f\x8b":
+        import gzip
+
+        raw = gzip.decompress(raw)
+    data = json.loads(raw.decode("utf-8"))
     if not isinstance(data, dict):
         raise MeshError(f"{path} does not contain a JSON object")
     return data
@@ -80,9 +93,16 @@ def _cmd_verify(args: argparse.Namespace) -> int:
             voter = TrustedVoters(base64.b64decode(args.voters_commitment.encode()),
                                   int(args.ln_proven_weight))
         bundle = _resolve_from(args.evidence)(uri)
-        report = _verify_bundle_dict(
-            bundle, voter,
-            base64.b64decode(args.genesis.encode()) if args.genesis else None)
+        # Public path: build a receipt over the resolved bundle, then verify it.
+        # The report (chain, txid, round, tier) comes out of the verification,
+        # never off the receipt's own claims.
+        receipt = create_receipt(bundle, uri, trusted_voters=voter)
+        report = verify_receipt(
+            receipt,
+            lambda _u: bundle,
+            trusted_voters=voter,
+            expected_genesis_hash_b64=args.genesis,
+        )
 
     out = consent_level(envelope, report, bundle=bundle, require=args.require)
 

@@ -117,7 +117,7 @@ Run in a fresh `python:3.12-slim` container on VM2 with the network removed at i
 | Suite | **16 tests, 0 skipped, 0 failed** |
 | Shipped example drives both chains on the installed wheel | **PASS** |
 | `avm-ac2` entry point runs; `payload` emits canonical bytes | PASS |
-| **CLEAN-ROOM GREEN** | 7/7 stages |
+| **CLEAN-ROOM GREEN** | 9 PASS, 0 FAIL across 5 stages |
 
 #### Mutation check (inside that same container)
 

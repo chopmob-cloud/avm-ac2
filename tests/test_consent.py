@@ -262,3 +262,81 @@ def test_captures_are_the_ones_this_suite_was_written_against(name, expected):
     raw = (_examples() / name).read_bytes()
     data = gzip.decompress(raw) if name.endswith(".gz") else raw
     assert hashlib.sha256(data).hexdigest() == expected
+
+
+# ---------------------------------------------- shapes a reviewer asked about
+
+def test_the_no_consent_result_carries_the_same_keys_as_a_present_one(algorand):
+    """A level-NONE result must be schema-identical, not a subset.
+
+    A caller reading ``out["sig_hint"]`` unconditionally should get None rather
+    than a KeyError, so the absent case cannot be mishandled into a crash that
+    looks like an invalid consent.
+    """
+    bundle, report = algorand
+    settlement = _settlement(report)
+    absent_env = sealed.seal({"version": 1, "settlement": settlement},
+                             bundle, "mem://t", trusted_voters=_anchor(bundle))
+    absent = verify_consent(absent_env)
+
+    sk, pk = _keypair()
+    present_env, _ = _seal(settlement, bundle, sk=sk, pk=pk)
+    present = verify_consent(present_env)
+
+    assert set(absent) == set(present), (set(absent) ^ set(present))
+    assert absent["sig_hint"] is None
+
+
+def test_a_bundle_without_a_genesis_id_is_refused_not_silently_downgraded(algorand):
+    """Passing a bundle implies 'bind to the sender'. Losing that must be loud."""
+    class ReportWithoutGenesis:
+        trust_root = "stake_attested"
+
+    bundle, report = algorand
+    settlement = _settlement(report)
+    sk, pk = _keypair()
+    envelope, _ = _seal(settlement, bundle, sk=sk, pk=pk)
+
+    with pytest.raises(MeshError) as exc:
+        consent_level(envelope, ReportWithoutGenesis(), bundle=bundle)
+    assert "no genesis_id" in str(exc.value)
+
+
+def test_a_multisig_or_logic_sig_payer_is_named_in_the_refusal(algorand):
+    """A program address is a hash, not an Ed25519 key, and can never match."""
+    bundle, report = algorand
+    settlement = _settlement(report)
+    sk, pk = _keypair()
+    envelope, _ = _seal(settlement, bundle, sk=sk, pk=pk)
+
+    with pytest.raises(MeshError) as exc:
+        verify_consent(envelope, expected_sender=bytes(range(32)))
+    message = str(exc.value)
+    assert "logic-sig" in message and "multisig" in message, message
+
+
+def test_the_cli_reads_a_gzipped_proofpack(tmp_path):
+    """A real capture is stored ``.json.gz``; reading it as text dies on 0x8b.
+
+    Found by running the CLI against the shipped Voi receipt, not by a test: the
+    demo loaded the capture itself and so never exercised the CLI's reader. This
+    pins the magic-number sniffing that fixed it, on the exact file shape that
+    failed.
+    """
+    from avm_ac2.cli import _read_json
+
+    src = _examples() / "voi-proofpack-24213754.json.gz"
+    bundle = _read_json(str(src))
+    assert bundle["chain"]["genesis_id"] == "voimain-v1.0"
+
+    # A plain .json copy must read identically, so the sniff is on magic bytes
+    # rather than on the extension.
+    plain = tmp_path / "bundle.json"
+    plain.write_text(json.dumps(bundle), encoding="utf-8")
+    assert _read_json(str(plain))["chain"]["genesis_id"] == "voimain-v1.0"
+
+    # And a gzip file with a .json name must still work, which is the case an
+    # extension check would get wrong.
+    misnamed = tmp_path / "bundle-misnamed.json"
+    misnamed.write_bytes(src.read_bytes())
+    assert _read_json(str(misnamed))["chain"]["genesis_id"] == "voimain-v1.0"
