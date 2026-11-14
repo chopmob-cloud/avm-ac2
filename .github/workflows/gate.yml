@@ -1,0 +1,68 @@
+name: gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  clean-room:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The floor is the declared `requires-python`, so the claim is executed
+        # rather than asserted. 3.12 is what the package was developed on.
+        python: ["3.10", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      # Install the package with its declared dependencies so the closure is
+      # exercised: if pyproject is wrong, this is the step that finds out.
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install . pytest
+
+      - name: Dependency closure is consistent
+        run: pip check
+
+      # Skips are failures. A skip means an input was not shipped, and a summary
+      # line reads a skip as a pass. There is no optional native component here,
+      # so the honest count is zero.
+      - name: Suite (skips are failures)
+        run: |
+          set -o pipefail
+          python -m pytest tests -q -rs | tee /tmp/t.log
+          if grep -qE "[0-9]+ skipped" /tmp/t.log; then
+            echo "::error::tests were skipped; an input was not shipped"
+            exit 1
+          fi
+
+      # The captures are pinned by SHA-256. Assert they survive the checkout
+      # unmodified, because a line-ending rule is the usual way they stop being
+      # the bytes the digest was taken over.
+      - name: Captures are byte-exact
+        run: python tools/check_captures.py
+
+      # Run the shipped example. Reading the README cannot find the class of bug
+      # a gzipped proofpack caused here; running it can.
+      - name: Example drives both chains
+        run: |
+          set -o pipefail
+          python examples/ac2_consent_demo.py | tee /tmp/demo.log
+          grep -q "mainnet-v1.0" /tmp/demo.log
+          grep -q "voimain-v1.0" /tmp/demo.log
+          grep -q "RESULT: PASS" /tmp/demo.log
+
+      - name: CLI entry point runs
+        run: |
+          avm-ac2 --help
+          avm-ac2 payload examples/settlement-voi.json | grep -q "settlement-consent"
