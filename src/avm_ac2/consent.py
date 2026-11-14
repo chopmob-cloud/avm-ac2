@@ -264,13 +264,12 @@ def _ed25519_verify(public_key: bytes, message: bytes, signature: bytes) -> bool
         # A well-formed signature that does not verify: the ordinary "wrong
         # signer" case.
         return False
-    except Exception:
-        # Unreachable with the inputs this module passes: verify_consent checks
-        # the key is exactly 32 bytes and the signature exactly 64 before calling
-        # here, ``from_public_bytes`` accepts any 32 bytes, and ``verify`` raises
-        # InvalidSignature rather than a parse error for a wrong-length
-        # signature. Kept as a boundary; malformed lengths are refused earlier
-        # with a specific message, which is where the diagnosis belongs.
+    except ValueError:
+        # Reachable only if a caller passes a key or signature of the wrong
+        # length without going through verify_consent (which checks both first).
+        # Answering False is right -- it is not a valid approval -- and raising
+        # would be wrong here, because this function's contract is a boolean and
+        # the length refusal belongs to the caller that owns the message.
         return False
 
 
