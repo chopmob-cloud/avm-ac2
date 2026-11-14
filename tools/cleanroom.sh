@@ -138,7 +138,10 @@ verdict $DEMO_RC "consent binding on Algorand and Voi, on the installed wheel"
 echo "=== 5. CLI entry point ==="
 "$VENV"/bin/avm-ac2 --help >/tmp/cli.log 2>&1
 verdict $? "avm-ac2 entry point runs"
-"$VENV"/bin/avm-ac2 payload "$EXAMPLES/settlement-voi.json" >/tmp/payload.log 2>&1
+# settlement-voi.json lives in examples/, NOT in tests/captures/ -- pointing this
+# at $EXAMPLES made the stage fail for a path mistake, which reads like a broken
+# CLI. The captures directory holds only the two proofpacks.
+"$VENV"/bin/avm-ac2 payload "$AC2_SRC/examples/settlement-voi.json" >/tmp/payload.log 2>&1
 [ -s /tmp/payload.log ] && grep -q "settlement-consent" /tmp/payload.log
 verdict $? "avm-ac2 payload emits the canonical consent bytes"
 
