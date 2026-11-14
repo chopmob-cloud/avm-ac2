@@ -1,0 +1,26 @@
+avm-mesh
+Copyright 2026 AlgoVoi
+
+This software was created and is maintained by AlgoVoi, and is offered as a
+gift to the Algorand and Voi communities under the Apache License, Version 2.0.
+
+You are free to use, modify, and redistribute it. If you redistribute this
+software or a derivative of it, this NOTICE and the attribution to AlgoVoi
+must be retained (Apache-2.0, Section 4).
+
+avm-ac2 implements a binding between two independently published protocols and
+claims nothing over either:
+
+  * AC2 (Agentic Communication and Control), a Draft specification published by
+    the Algorand Foundation at https://github.com/algorandfoundation/ac2. This
+    package does not redistribute AC2 code: the `@algorandfoundation/ac2-sdk`
+    npm package (Apache-2.0) is used from the JavaScript side and is not bundled
+    here.
+
+  * avm-mesh, by AlgoVoi (Apache-2.0), which supplies the sealed settlement
+    receipt format and the canonicalising function this package imports rather
+    than duplicating.
+
+"Algorand", "AC2" and "Voi" are the names and marks of their respective owners.
+Use of the name "AC2" here describes the protocol implemented and implies no
+endorsement by, or affiliation with, the Algorand Foundation.

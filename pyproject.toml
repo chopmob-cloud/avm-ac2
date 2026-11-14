@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "avm-ac2"
+version = "0.1.0"
+description = "AC2 consent bound to an avm-mesh settlement: proof of who authorised a transaction, on Algorand and Voi"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+authors = [{name = "AlgoVoi", email = "chopmob@gmail.com"}]
+keywords = ["algorand", "voi", "avm", "ac2", "consent", "settlement", "state-proof", "agents"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Security :: Cryptography",
+    "Topic :: Office/Business :: Financial",
+    "Operating System :: OS Independent",
+]
+# avm-mesh supplies the sealed-receipt format and its canonicaliser, so this
+# package extends it rather than duplicating it. cryptography is a direct
+# dependency here (not an extra): every caller of this package verifies an Ed25519
+# signature, so there is no dependency-light path to protect.
+dependencies = ["avm-mesh>=0.13.3", "cryptography>=42"]
+
+[project.scripts]
+avm-ac2 = "avm_ac2.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/chopmob-cloud/avm-ac2"
+Repository = "https://github.com/chopmob-cloud/avm-ac2"
+Issues = "https://github.com/chopmob-cloud/avm-ac2"
+
+[tool.setuptools.packages.find]
+where = ["src"]
