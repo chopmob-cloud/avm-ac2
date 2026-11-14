@@ -1,0 +1,19 @@
+# The sdist must be able to run the tests it ships. Without these rules the
+# archive contained test_*.py but NOT the fixtures they read, so an extracted-sdist
+# run skipped every capture test -- while the repo gate passed, because it tests a
+# Git checkout. Same defect class avm-mesh's MANIFEST.in records; found here by
+# inspecting the sdist rather than by trusting the wheel build.
+include LICENSE NOTICE README.md
+recursive-include src *.py
+recursive-include tests *.py *.json *.json.gz *.mjs
+recursive-include examples *.py *.json
+recursive-include tools *.py *.sh
+
+# Captures are pinned by SHA-256 in tests/test_consent.py and the interop fixture
+# holds a signature; both must travel byte-exact. A sdist is a tar of files, so it
+# does not normalise line endings itself -- but .gitattributes has no effect once
+# the archive is extracted, hence the explicit -text rules on the tracked files.
+include tests/captures/proofpack-66457600.json
+include tests/captures/voi-proofpack-24213754.json.gz
+include tests/interop/ac2_interop.json
+include tests/interop/interop_emit.mjs
