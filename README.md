@@ -244,6 +244,24 @@ txid equality is what caught it.
 Neither proves a hardware passkey was used: that limit is shared and comes from the
 AC2 wire format, not from the choice of flavour.
 
+### Integrator warning: do not build the payload with a transaction constructor
+
+`algokit-utils`' `bytesForSigning.transaction` drops the `gen` (genesis id string)
+key while keeping `gh` (the genesis hash), because on the *constructor* path it
+expects a node to fill that back in. A payload built that way is **not** the
+transaction the chain committed to: on the real Voi capture, removing `gen` changes
+the txid from `75LUFZZNQNOPS3SLQRHZZKZIECEEVGGP4N3ZZ2UU2UKFFJU5WG4A` to
+`XGEHZIIAVMQ64YVG3GOWUO4YG3OAQMZE4O2NGZDXNCQOXDFYGTVQ`.
+
+Use `avm_ac2.txn_consent.signing_preimage(bundle, chain)` to produce the payload.
+It restores `gen` and is checked against the bundle's own `transaction.txid` on both
+chains, so a wrong preimage fails loudly instead of producing a confident wrong
+transaction. `tests/test_txn_consent.py` pins this, including an assertion that the
+gen-less form does *not* reproduce the txid.
+
+This does not affect the wallet: it signs the bytes it is handed, not bytes it
+builds. It affects the agent, which is the side this package is for.
+
 ### What is *not* demonstrated
 
 - **No signature has been produced by a real wallet.** Every consent in this
