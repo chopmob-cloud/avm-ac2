@@ -12,3 +12,5 @@
 # over the exact bytes a state-proof bundle was captured as.
 tests/captures/* -text
 *.gz -text
+# The interop fixture holds a signature and must be the same bytes everywhere.
+tests/interop/*.json -text
