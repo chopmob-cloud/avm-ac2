@@ -54,14 +54,16 @@ the agent's word about who paid whom.
 
 ## Install
 
-Not yet on PyPI. Install from the repository:
+```bash
+pip install avm-ac2
+```
+
+`avm-ac2` 0.1.0 is on PyPI. Installing from the repository still works and tracks
+`main` rather than the release:
 
 ```bash
 pip install "git+https://github.com/chopmob-cloud/avm-ac2@main"
 ```
-
-Once published, `pip install avm-ac2` will work; until then that command fails, and
-this file will not claim otherwise.
 
 `avm-mesh` supplies the sealed-receipt format and its canonicaliser, so this
 package extends it rather than duplicating either. `cryptography` is a direct
