@@ -3,7 +3,7 @@
 # run skipped every capture test -- while the repo gate passed, because it tests a
 # Git checkout. Same defect class avm-mesh's MANIFEST.in records; found here by
 # inspecting the sdist rather than by trusting the wheel build.
-include LICENSE NOTICE README.md
+include LICENSE NOTICE README.md CHANGELOG.md
 recursive-include src *.py
 recursive-include tests *.py *.json *.json.gz *.mjs
 recursive-include examples *.py *.json
