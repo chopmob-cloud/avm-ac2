@@ -25,7 +25,7 @@ classifiers = [
 # package extends it rather than duplicating it. cryptography is a direct
 # dependency here (not an extra): every caller of this package verifies an Ed25519
 # signature, so there is no dependency-light path to protect.
-dependencies = ["avm-mesh>=0.13.3", "cryptography>=42"]
+dependencies = ["avm-mesh>=0.13.5", "cryptography>=42"]
 
 [project.scripts]
 avm-ac2 = "avm_ac2.cli:main"
