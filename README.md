@@ -112,8 +112,8 @@ avm-ac2 level   receipt.json --min-level sender_bound    # exits 2 if below
 
 #### Clean-room validation (this package, standalone)
 
-Run in a fresh `python:3.12-slim` container with the network removed at install time, against the
-**installed wheels** rather than the source tree:
+Run in a fresh `python:3.12-slim` container, installing with `--no-index` from a local wheel set so
+nothing is fetched, against the **installed wheels** rather than the source tree:
 
 | Stage | Result |
 |---|---|
@@ -121,7 +121,7 @@ Run in a fresh `python:3.12-slim` container with the network removed at install 
 | Offline install from wheels only (`avm-ac2` → `avm-mesh` → `avm-proofpack` → `avm-effectproof`) | PASS |
 | Installed version matches `pyproject.toml` (`0.1.0`) | PASS |
 | Both packages import from `site-packages`, not `/work/src` | PASS |
-| Suite | **20 tests, 0 skipped, 0 failed** |
+| Suite | **44 tests, 0 skipped, 0 failed** |
 | Shipped example drives both chains on the installed wheel | **PASS** |
 | `avm-ac2` entry point runs; `payload` emits canonical bytes | PASS |
 | **CLEAN-ROOM GREEN** | 9 PASS, 0 FAIL across 5 stages |
