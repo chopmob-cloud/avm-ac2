@@ -1,7 +1,7 @@
 # avm-ac2
 
 
-[![PyPI](https://img.shields.io/pypi/v/avm-ac2)](https://pypi.org/project/avm-ac2/)
+[![PyPI](https://img.shields.io/pypi/v/avm-ac2)](https://pypi.org/project/avm-ac2/) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](./LICENSE)
 
 **Proof of who authorised a settlement, bound to proof that it settled** — on
 Algorand and Voi, verifiable offline.
