@@ -1,5 +1,8 @@
 # avm-ac2
 
+
+[![PyPI](https://img.shields.io/pypi/v/avm-ac2)](https://pypi.org/project/avm-ac2/)
+
 **Proof of who authorised a settlement, bound to proof that it settled** — on
 Algorand and Voi, verifiable offline.
 
